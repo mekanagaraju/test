@@ -3346,32 +3346,51 @@ public class SingleSeleniumSolution
    }
 
 
-   public String getDeviceName()
+   public String getDeviceName(String osPlatform)
    {
       Process p = null;
-      String line = null;
-      try
+      String deviceName = null;
+      BufferedReader in = null;
+      if (osPlatform.equalsIgnoreCase("ios"))
       {
-         String OS = System.getProperty("os.name").toLowerCase();
-         if (OS.startsWith("windows"))
-         {
-            p = new ProcessBuilder("cmd.exe", "/C", "adb devices").start();
-         }
-         else if (OS.startsWith("mac os"))
-         {
-            p = new ProcessBuilder("/bin/bash", "-l", "-c", "adb devices").start();
-         }
          try
          {
-            p.waitFor();
-         } catch (Exception e)
+            p = new ProcessBuilder("/bin/bash", "-l", "-c", "idevice_id -l").start();
+            try
+            {
+               p.waitFor();
+            } catch (Exception e)
+            {}
+            in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            deviceName = in.readLine().trim();
+         } catch (IOException e)
          {}
-         BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-         line = in.readLine();
-         line = in.readLine().replaceAll("device", "").replaceAll("\t", "").trim();
-      } catch (IOException e)
-      {}
-      return line;
+      }
+      else
+      {
+         try
+         {
+            String OS = System.getProperty("os.name").toLowerCase();
+            if (OS.startsWith("windows"))
+            {
+               p = new ProcessBuilder("cmd.exe", "/C", "adb devices").start();
+            }
+            else if (OS.startsWith("mac os"))
+            {
+               p = new ProcessBuilder("/bin/bash", "-l", "-c", "adb devices").start();
+            }
+            try
+            {
+               p.waitFor();
+            } catch (Exception e)
+            {}
+            in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            deviceName = in.readLine();
+            deviceName = in.readLine().replaceAll("device", "").replaceAll("\t", "").trim();
+         } catch (IOException e)
+         {}
+      }
+      return deviceName;
    }
 
 
